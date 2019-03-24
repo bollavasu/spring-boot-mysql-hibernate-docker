@@ -1,0 +1,47 @@
+https://springbootdev.com/2017/11/30/docker-spring-boot-and-spring-data-jpa-mysql-rest-api-example-with-docker-without-docker-compose/
+https://github.com/bollavasu/spring-boot-mysql-hibernate
+			 
+docker run -d \
+      -p 2012:3306 \
+     --name mysql-docker-container \
+     -e MYSQL_ROOT_PASSWORD=root \
+     -e MYSQL_DATABASE=vasu \
+     -e MYSQL_USER=mysql \
+     -e MYSQL_PASSWORD=mysql \
+        mysql:latest
+		
+docker exec -it containerId bash    //log into container
+mysql -u root -p                    //log into MYSQL
+  
+CREATE TABLE vasu.articles (
+  `article_id` int(5) NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) NOT NULL,
+  `category` varchar(100) NOT NULL,
+  PRIMARY KEY (`article_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+
+INSERT INTO vasu.articles (`article_id`, `title`, `category`) VALUES
+	(1, 'Java Concurrency', 'Java'),
+	(2, 'Hibernate HQL ', 'Hibernate'),
+	(3, 'Spring MVC with Hibernate', 'Spring'); 
+		
+docker build -f Dockerfile -t spring-boot-mysql-hibernate-image .
+docker run -t --name spring-boot-mysql-hibernate-container --link mysql-docker-container:mysql -p 8087:8080 spring-boot-mysql-hibernate-image
+  
+  http://192.168.99.100:8087/user/articles         (GET)
+  http://192.168.99.100:8087/user/article/3        (GET)
+  
+  http://192.168.99.100:8087/user/article/         (POST)
+  {
+  "article_id":"4",
+  "title":"Cassandra",
+  "category":"ColumnDB"
+  }
+
+1)Push our spring-boot-mysql-hibernate application image
+docker commit a768c12ad325 bollavasu/spring-boot-mysql-hibernate-image:1      (Creates a new image from a container’s changes)
+docker push bollavasu/spring-boot-mysql-hibernate-image:1                     (Pushes our new image to Docker hub)
+
+2)Push our MYSQL container
+docker commit 3c29595e744f bollavasu/spring-boot-mysql-hibernate-mysql-image:1 
+docker push bollavasu/spring-boot-mysql-hibernate-mysql-image:1
